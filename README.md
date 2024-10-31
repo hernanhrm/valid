@@ -85,24 +85,44 @@ func main() {
 
 ## Internationalization 🌍
 
-The library supports English and Spanish out of the box, with the ability to add custom translations:
+The library supports English and Spanish out of the box, with flexible language configuration:
+
+### Global Default Language
 
 ```go
-// Add a single translation
-valid.AddTranslation("custom_error", valid.EN, "custom validation failed: %s")
-valid.AddTranslation("custom_error", valid.ES, "validación personalizada fallida: %s")
+// Set default language globally (e.g., in init() or main())
+valid.SetDefaultLanguage(valid.ES)
 
-// Add multiple translations at once
+// Create validator with default language
+v := valid.New()
+
+// Check current default language
+lang := valid.GetDefaultLanguage()
+```
+
+### Instance-specific Language
+
+```go
+// Override default language for specific validator
+v1 := valid.New(valid.WithLanguage(valid.EN))
+v2 := valid.New(valid.WithLanguage(valid.ES))
+vDefault := valid.New() // Uses global default language
+```
+
+### Custom Translations
+
+```go
+// Add custom translations
+valid.AddTranslation("custom_rule", valid.EN, "validation failed: %s")
+valid.AddTranslation("custom_rule", valid.ES, "validación fallida: %s")
+
+// Add multiple translations
 valid.AddTranslations(map[string]map[valid.Language]string{
-    "password_strength": {
-        valid.EN: "password must contain at least %d special characters",
-        valid.ES: "la contraseña debe contener al menos %d caracteres especiales",
+    "custom_rule": {
+        valid.EN: "validation failed: %s",
+        valid.ES: "validación fallida: %s",
     },
 })
-
-// Use different languages
-vEn := valid.New(valid.EN)
-vEs := valid.New(valid.ES)
 ```
 
 ## Available Validators 📝

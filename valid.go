@@ -31,16 +31,6 @@ type Validator struct {
 	language Language
 }
 
-func New(language Language) *Validator {
-	if language == "" {
-		language = EN
-	}
-	return &Validator{
-		errors:   make(ValidationErrors, 0),
-		language: language,
-	}
-}
-
 func (v *Validator) AddError(field string, key string, args ...interface{}) {
 	trans.RLock()
 	msg, ok := trans.messages[key][v.language]
