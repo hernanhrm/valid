@@ -74,3 +74,11 @@ func (v *Validator) AddError(field string, key MessageKey, params MessageParams)
 		Message: message,
 	})
 }
+
+func (v *Validator) HasErros() bool {
+	return len(v.errors) > 0
+}
+
+func (v *Validator) Errors() ValidationErrors {
+	return v.errors
+}
