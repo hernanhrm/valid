@@ -1,90 +1,45 @@
 package valid
 
-import (
-	"sync"
-)
-
-type Language string
+type Locale string
 
 const (
-	EN Language = "en"
-	ES Language = "es"
+	LocaleES Locale = "es"
+	LocaleEN Locale = "en"
 )
 
-type translations struct {
-	sync.RWMutex
-	messages map[string]map[Language]string
-}
+type MessageKey string
 
-var defaultMessages = map[string]map[Language]string{
-	"required": {
-		EN: "field is required",
-		ES: "el campo es requerido",
-	},
-	"min_length": {
-		EN: "minimum length is %d",
-		ES: "la longitud mínima es %d",
-	},
-	"max_length": {
-		EN: "maximum length is %d",
-		ES: "la longitud máxima es %d",
-	},
-	"min_value": {
-		EN: "minimum value is %v",
-		ES: "el valor mínimo es %v",
-	},
-	"max_value": {
-		EN: "maximum value is %v",
-		ES: "el valor máximo es %v",
-	},
-	"between": {
-		EN: "value must be between %v and %v",
-		ES: "el valor debe estar entre %v y %v",
-	},
-	"email": {
-		EN: "invalid email format",
-		ES: "formato de email inválido",
-	},
-	"url": {
-		EN: "invalid URL format",
-		ES: "formato de URL inválido",
-	},
-	"pattern": {
-		EN: "invalid format",
-		ES: "formato inválido",
-	},
-	"unique": {
-		EN: "duplicate value found at index %d",
-		ES: "valor duplicado encontrado en el índice %d",
-	},
-}
+const (
+	// Field validations
+	MsgRequired       MessageKey = "required"
+	MsgMinLength      MessageKey = "min_length"
+	MsgMaxLength      MessageKey = "max_length"
+	MsgEmail          MessageKey = "email"
+	MsgMinValue       MessageKey = "min_value"
+	MsgMaxValue       MessageKey = "max_value"
+	MsgBetween        MessageKey = "between"
+	MsgPrecision      MessageKey = "precision"
+	MsgPast           MessageKey = "past"
+	MsgFuture         MessageKey = "future"
+	MsgAfter          MessageKey = "after"
+	MsgBefore         MessageKey = "before"
+	MsgBetweenDates   MessageKey = "between_dates"
+	MsgWeekday        MessageKey = "weekday"
+	MsgMaxAge         MessageKey = "max_age"
+	MsgMinAge         MessageKey = "min_age"
+	MsgSliceRequired  MessageKey = "slice_required"
+	MsgSliceMinLength MessageKey = "slice_min_length"
+	MsgSliceMaxLength MessageKey = "slice_max_length"
+	MsgSliceLength    MessageKey = "slice_length"
+	MsgSliceMin       MessageKey = "slice_min"
+	MsgSliceMax       MessageKey = "slice_max"
+	MsgSliceBetween   MessageKey = "slice_between"
+)
 
-var trans = &translations{
-	messages: defaultMessages,
-}
+type MessageParams map[string]interface{}
 
-// AddTranslation permite agregar o modificar traducciones en runtime
-func AddTranslation(key string, lang Language, message string) {
-	trans.Lock()
-	defer trans.Unlock()
-
-	if _, ok := trans.messages[key]; !ok {
-		trans.messages[key] = make(map[Language]string)
-	}
-	trans.messages[key][lang] = message
-}
-
-// AddTranslations permite agregar múltiples traducciones a la vez
-func AddTranslations(messages map[string]map[Language]string) {
-	trans.Lock()
-	defer trans.Unlock()
-
-	for key, langs := range messages {
-		if _, ok := trans.messages[key]; !ok {
-			trans.messages[key] = make(map[Language]string)
-		}
-		for lang, msg := range langs {
-			trans.messages[key][lang] = msg
-		}
-	}
+type Translator interface {
+	Translate(locale Locale, key MessageKey, params MessageParams) string
+	SetLocale(locale Locale)
+	GetLocale() Locale
 }

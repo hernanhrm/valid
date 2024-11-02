@@ -34,30 +34,34 @@ import (
 )
 
 type User struct {
-    Age       int
+    Age       int64
     Email     string
     Score     float64
     Tags      []string
 }
 
 func (u *User) Validate() error {
-    // Initialize validator with language preference
-    v := valid.New(valid.ES) // or valid.EN for English
+    v := valid.New()
+    // Optional: set locale (default is ES)
+    v.SetLocale(valid.LocaleEN)
 
-    v.Int("age", u.Age).
+    v.Int("age", u.Age, valid.NumberRules[int64]().
         Required().
-        Between(18, 130)
+        Between(18, 130).
+        Build()...)
 
-    v.String("email", u.Email).
+    v.String("email", u.Email, valid.StringRules().
         Required().
-        Email()
+        Email().
+        Build()...)
 
-    v.Float("score", u.Score).
+    v.Float64("score", u.Score, valid.FloatRules[float64]().
         Required().
         Between(0, 100).
-        Precision(2)
+        Precision(2).
+        Build()...)
 
-    v.Slice("tags", u.Tags).
+    v.StringSlice("tags", u.Tags).
         Required().
         MinLength(1).
         MaxLength(5)
@@ -78,51 +82,30 @@ func main() {
     }
 
     if err := user.Validate(); err != nil {
-        fmt.Printf("Errores de validación:\n%s\n", err)
+        fmt.Printf("Validation errors:\n%s\n", err)
     }
 }
 ```
 
 ## Internationalization 🌍
 
-The library supports English and Spanish out of the box, with flexible language configuration:
-
-### Global Default Language
+The library provides built-in support for English and Spanish:
 
 ```go
-// Set default language globally (e.g., in init() or main())
-valid.SetDefaultLanguage(valid.ES)
-
-// Create validator with default language
+// Create validator (defaults to Spanish)
 v := valid.New()
 
-// Check current default language
-lang := valid.GetDefaultLanguage()
-```
+// Set locale to English
+v.SetLocale(valid.LocaleEN)
 
-### Instance-specific Language
+// Available locales
+valid.LocaleES // Spanish
+valid.LocaleEN // English
 
-```go
-// Override default language for specific validator
-v1 := valid.New(valid.WithLanguage(valid.EN))
-v2 := valid.New(valid.WithLanguage(valid.ES))
-vDefault := valid.New() // Uses global default language
-```
-
-### Custom Translations
-
-```go
-// Add custom translations
-valid.AddTranslation("custom_rule", valid.EN, "validation failed: %s")
-valid.AddTranslation("custom_rule", valid.ES, "validación fallida: %s")
-
-// Add multiple translations
-valid.AddTranslations(map[string]map[valid.Language]string{
-    "custom_rule": {
-        valid.EN: "validation failed: %s",
-        valid.ES: "validación fallida: %s",
-    },
-})
+// Error messages will be in the selected language
+v.String("name", "", valid.StringRules().Required().Build()...)
+// EN: "field is required"
+// ES: "el campo es requerido"
 ```
 
 ## Available Validators 📝
@@ -130,85 +113,91 @@ valid.AddTranslations(map[string]map[valid.Language]string{
 ### String Validation
 
 ```go
-v.String("field", value).
+v.String("field", value, valid.StringRules().
     Required().
     MinLength(5).
     MaxLength(100).
     Email().
-    URL().
-    Pattern(regexp).
-    Password()
+    Build()...)
 ```
 
-### Integer Validation
+### Number Validation (Integer)
 
 ```go
-v.Int("field", value).
+v.Int("field", value, valid.NumberRules[int64]().
     Required().
     Min(0).
     Max(100).
     Between(18, 65).
-    Positive().
-    MultipleOf(5)
+    Build()...)
 ```
 
 ### Float Validation
 
 ```go
-v.Float("field", value).
+v.Float64("field", value, valid.FloatRules[float64]().
     Required().
-    Positive().
     Between(0, 100).
-    Precision(2)
+    Precision(2).
+    Build()...)
+```
+
+### Time Validation
+
+```go
+v.Time("field", value, valid.TimeRules().
+    Required().
+    Past().
+    After(startDate).
+    Before(endDate).
+    Between(start, end).
+    MinAge(18).
+    MaxAge(100).
+    Build()...)
 ```
 
 ### Slice Validation
 
 ```go
-v.Slice("field", value).
+// String slice
+v.StringSlice("field", value).
     Required().
     MinLength(1).
-    MaxLength(10).
-    Each(func(v *valid.Validator, i int, item T) {
-        // Validate each item
-    })
+    MaxLength(10)
+
+// Number slice
+v.Int64Slice("field", value).
+    Required().
+    MinLength(1).
+    Min(0).
+    Max(100)
+
+// Float slice
+v.Float64Slice("field", value).
+    Required().
+    MinLength(1).
+    Min(0.0).
+    Max(100.0)
 ```
 
 ## Error Handling 🚨
 
-Errors are returned in the selected language:
+ValidationErrors provides both individual error details and a formatted string:
 
 ```go
-// English
-type ValidationErrors []ValidationError
-err.Error() // Returns: "age: must be between 18 and 130; email: invalid email format"
-
-// Spanish
-err.Error() // Returns: "age: debe estar entre 18 y 130; email: formato de email inválido"
-```
-
-## Best Practices 💡
-
-1. Create a validator instance with your preferred language:
-
-```go
-v := valid.New(valid.ES) // or valid.EN
-```
-
-2. Chain validations fluently:
-
-```go
-v.String("password", password).
-    Required().
-    MinLength(8).
-    Password()
-```
-
-3. Add custom translations if needed:
-
-```go
-valid.AddTranslation("my_rule", valid.EN, "custom validation message: %s")
-valid.AddTranslation("my_rule", valid.ES, "mensaje de validación personalizado: %s")
+if v.HasErrors() {
+    errors := v.Errors()
+    
+    // Access individual errors
+    for _, err := range errors {
+        fmt.Printf("Field: %s, Message: %s\n", err.Field, err.Message)
+    }
+    
+    // Get formatted error string
+    fmt.Println(errors.Error())
+    // EN: "age: must be greater than or equal to 18; email: invalid email format"
+    // ES: "age: debe ser mayor o igual a 18; email: formato de correo electrónico inválido"
+}
 ```
 
 ## Contributing 🤝
@@ -231,8 +220,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Start a discussion for feature requests
 - Check out the [documentation](https://pkg.go.dev/github.com/techforge-lat/valid)
 
-## Acknowledgments 🙏
-
-Special thanks to all contributors and users who have helped shape this library.
-
-Made with ❤️ by [Your Name]
+Made with ❤️ by TechForge LATAM
