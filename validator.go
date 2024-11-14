@@ -75,7 +75,7 @@ func (v *Validator) AddError(field string, key MessageKey, params MessageParams)
 	})
 }
 
-func (v *Validator) HasErros() bool {
+func (v *Validator) HasErrors() bool {
 	return len(v.errors) > 0
 }
 
