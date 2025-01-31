@@ -34,6 +34,7 @@ const (
 	MsgSliceMin       MessageKey = "slice_min"
 	MsgSliceMax       MessageKey = "slice_max"
 	MsgSliceBetween   MessageKey = "slice_between"
+	MsgInvalidUUID    MessageKey = "invalid_uuid"
 )
 
 type MessageParams map[string]interface{}

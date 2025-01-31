@@ -1,6 +1,10 @@
 package valid
 
-import "net/mail"
+import (
+	"net/mail"
+
+	"github.com/google/uuid"
+)
 
 // Required validates that the string is not empty
 func (b *StringRuleBuilder) Required() *StringRuleBuilder {
@@ -42,6 +46,16 @@ func (b *StringRuleBuilder) Email() *StringRuleBuilder {
 		_, err := mail.ParseAddress(sv.value)
 		if err != nil {
 			sv.v.AddError(sv.field, MsgEmail, nil)
+		}
+	})
+	return b
+}
+
+// Required validates that the string is not empty
+func (b *StringRuleBuilder) UUID() *StringRuleBuilder {
+	b.rules = append(b.rules, func(sv *StringValidator) {
+		if err := uuid.Validate(sv.value); err != nil {
+			sv.v.AddError(sv.field, MsgInvalidUUID, nil)
 		}
 	})
 	return b

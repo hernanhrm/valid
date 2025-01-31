@@ -7,8 +7,9 @@ import (
 
 // ValidationError represents a single validation error
 type ValidationError struct {
-	Field   string `json:"field"`
-	Message string `json:"message"`
+	Field      string     `json:"field"`
+	Message    string     `json:"message"`
+	MessageKey MessageKey `json:"message_key"`
 }
 
 func (e ValidationError) Error() string {
@@ -69,9 +70,11 @@ func (v *Validator) SetLocale(locale Locale) {
 // AddError adds a validation error
 func (v *Validator) AddError(field string, key MessageKey, params MessageParams) {
 	message := v.translator.Translate(v.translator.GetLocale(), key, params)
+
 	v.errors = append(v.errors, ValidationError{
-		Field:   field,
-		Message: message,
+		Field:      field,
+		Message:    message,
+		MessageKey: key,
 	})
 }
 
