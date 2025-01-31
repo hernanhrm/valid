@@ -54,7 +54,17 @@ func (b *StringRuleBuilder) Email() *StringRuleBuilder {
 // Required validates that the string is not empty
 func (b *StringRuleBuilder) UUID() *StringRuleBuilder {
 	b.rules = append(b.rules, func(sv *StringValidator) {
-		if err := uuid.Validate(sv.value); err != nil {
+		if sv.value == "" {
+			sv.v.AddError(sv.field, MsgInvalidUUID, nil)
+			return
+		}
+
+		if sv.value == uuid.Nil.String() {
+			sv.v.AddError(sv.field, MsgInvalidUUID, nil)
+			return
+		}
+
+		if _, err := uuid.Parse(sv.value); err != nil {
 			sv.v.AddError(sv.field, MsgInvalidUUID, nil)
 		}
 	})
