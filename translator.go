@@ -42,6 +42,7 @@ func NewTranslator() Translator {
 		MsgSliceMax:       "el elemento en la posición %d debe ser menor o igual a %v",
 		MsgSliceBetween:   "el elemento en la posición %d debe estar entre %v y %v",
 		MsgInvalidUUID:    "UUID inválido",
+		MsgOneOf:          "debe ser uno de de los valores permitidos",
 	}
 
 	t.messages[LocaleEN] = map[MessageKey]string{
@@ -69,6 +70,7 @@ func NewTranslator() Translator {
 		MsgSliceMax:       "element at position %d must be less than or equal to %v",
 		MsgSliceBetween:   "element at position %d must be between %v and %v",
 		MsgInvalidUUID:    "invalid uuid",
+		MsgOneOf:          "mut be one of the allowed values",
 	}
 
 	return t

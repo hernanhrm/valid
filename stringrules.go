@@ -51,6 +51,20 @@ func (b *StringRuleBuilder) Email() *StringRuleBuilder {
 	return b
 }
 
+// Or validates that the string is not empty
+func (b *StringRuleBuilder) OneOf(values ...string) *StringRuleBuilder {
+	b.rules = append(b.rules, func(sv *StringValidator) {
+		for _, v := range values {
+			if sv.value == v {
+				return
+			}
+		}
+		sv.v.AddError(sv.field, MsgOneOf, nil)
+	})
+
+	return b
+}
+
 // Required validates that the string is not empty
 func (b *StringRuleBuilder) UUID() *StringRuleBuilder {
 	b.rules = append(b.rules, func(sv *StringValidator) {
